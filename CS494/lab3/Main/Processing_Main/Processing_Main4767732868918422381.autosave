@@ -1,0 +1,398 @@
+/* Team 11
+* Template Code for easy UI testing
+* Processing Reference: https://processing.org/reference/
+* References:
+*        * Background Image: https://processing.org/examples/backgroundimage.html
+*/
+
+import processing.serial.*;
+Serial myPort;        // The serial port
+
+
+PImage f_map;
+PImage i_map;
+float a = 0.0;
+float s = 0.0;
+
+//UI Stuff
+int state = 0;
+
+//Input Variables
+float accX = 0;
+float accY = 0;
+float accZ = 0;
+
+float lastAccX = 0;
+float lastAccY = 0;
+float lastAccZ = 0;
+
+boolean moveX = false;
+boolean moveY = false;
+boolean moveZ = false;
+
+int mFF = 0;
+int mF = 0;
+int heel = 0;
+int lMF = 0;
+
+// Buttons
+boolean homeButton = false;
+String homeText = "Home";
+int hBSP[] = {898, 2, 100, 58}; //home button position and size
+
+boolean stepRecordButton = false;
+String stepText = "Record Steps";
+int sRSP[] = {50, 50, 225, 80};
+
+boolean gaitRecordButton = false;
+String gaitText = "Walk (2 mins)";
+int gRSP[] = {50, 320, 225, 80};
+
+/******/
+//Gait Variables
+String gaitType = "Normal";
+int pThresh = 10;
+int stepCount = 0;
+float cadenceC = 0.0;
+int lastMil = 0;
+int lastState = 0;
+int stepState = 0;
+
+//value to remember total steps
+int numSteps;
+int cadence = 0;
+
+//flags to be used to detect a step
+boolean toeOff = false;
+boolean heelStrike = false;
+
+//keeps track of time
+long timer = 0;
+/******/
+
+// Heat Map Variables
+int mFFR = 0;
+int mFR = 0;
+int heelR = 0;
+int lMFR = 0;
+
+
+/**************************/
+/********* Set up *********/
+
+void setup() {
+  size(1000, 1000);
+  f_map = loadImage("foot-1000.jpg");
+  i_map = loadImage("intrStage.jpeg");
+
+  myPort = new Serial(this, "COM3", 115200); // Open whatever port is the one you're using.
+  myPort.bufferUntil('\n'); // don't generate a serialEvent() unless you get a newline character:
+}
+
+/***** End of Set up *****/
+/*************************/
+
+
+/*************************/
+/********* Draw **********/
+
+void draw() {
+  update(mouseX, mouseY); //important for mouse usability
+
+
+
+  currentWindow();
+
+  if (millis() - lastMil >= 1000){
+    stepCount++;
+    lastMil = millis();
+  }
+
+  /********************************/
+  /******** Step/Gait Info ********/
+
+  // Cadence/Step Count Info
+  button(sRSP, stepText, 30, 255, stepRecordButton, #808080, #006699);
+  button(gRSP, gaitText, 30, 255, gaitRecordButton, #808080, #006699);
+
+  /**** End of Step/Gait Info *****/
+  /********************************/
+
+  topBar();
+
+}
+/**** End of Draw *****/
+/********************************/
+
+
+/*******************/
+/* Current Window */
+void currentWindow(){
+  switch(state){
+    case 0: //Main Window
+      heatMap();
+    break;
+
+    case 1:
+
+      break;
+
+    case 2: // Interesting Impl
+      intrStage();
+      break;
+
+    case 3: //Meditation Mode
+      break;
+  }
+}
+/**** End of Current Window *****/
+/********************************/
+
+/*******************/
+/* Top Bar */
+void topBar() {
+  fill(0, 102, 153); //change color depending on if age and baseline are good ready (ADD)
+  rect(0, 0, width, height/16);
+  button(hBSP, homeText, 32, #006699, homeButton, #808080, 255);
+
+  fill(255);
+  textSize(40);
+  textAlign(LEFT);
+
+  //Display which mode you're on.
+  String mode = "";
+  switch(state){
+    case 0: //Main Window
+    mode = "HOME";
+    break;
+    case 1: //Gait Analysis
+    mode = "STEP RECORDING";
+    break;
+    case 2: //Guided Workout
+    mode = "GUIDED WORKOUT";
+    break;
+    case 3: //Meditation Mode
+    mode = "MEDITATION";
+    break;
+  }
+  text(mode, 5, height/20);
+
+  textSize(26);
+
+  //Display### if no baseBPM is stored and baseBPM
+
+
+  text("  Step Count: " + nfc(numSteps,1) + "\t| RR: "+ nfc(cadenceC,1), width/2, height/22);
+}
+/* End of Top Bar */
+/**************************/
+
+/*******************/
+/* Gait Analysis */
+
+//adds to the step counter after a step is detected
+void incrementSteps()
+{
+      //increment steps by 2 since there's only one sole but a cycle would be 2 steps
+      //unfortunate innate problem is that if you step off with the FSR foot, the counter will always be off by 1
+      numSteps = numSteps + 2;
+      println(numSteps);
+
+}
+
+//detects steps based on a toe off into heel strike cycle
+void detectStep()
+{
+    if(mFF > pThresh && heel < pThresh && moveY && stepState == 0){
+      stepState = 1;
+      println("Toe Off");
+    } else if(lMF > pThresh && mF > pThresh  && stepState == 1) {
+      stepState = 2;
+      println("Mid Stance");
+    } else if(mFF < pThresh && heel > pThresh && moveY && stepState == 2) {
+      stepState = 0;
+      incrementSteps();
+      println("Heel Strike");
+    }
+}
+
+//stores how many steps taken in a 2 minute period to cadence
+//takes difference of current time found from millis() and timer to tell when 2 minutes is up
+//startTime and startStepCount should be initialized by an event
+//void findCadence(constant long startTime, const int& startStepCount)
+//{
+//    if((millis() - startTime) >= 120000)
+//        cadence = (numSteps - startStepCount);
+//}
+
+/**** End of Gait Analysis *****/
+/********************************/
+
+/*******************/
+/* Heat Map */
+void heatMap() {
+
+    /* just here to change the size
+     a is used for the sizing
+     TODO: replace with FSR values
+           - depending on how large the values are,
+             divide the values by something to make
+             them fit on the foot */
+
+  background(f_map);
+  // toe
+  fill(255, 0, 0);
+  ellipse(635, 370, mFFR, mFFR);
+
+  // green
+  fill(0, 255, 0);
+  ellipse(690, 470, mFR, mFR);
+
+  // blue
+  fill (0, 0, 255);
+  ellipse(800, 470, lMFR, lMFR);
+
+  // heel
+  fill(200, 0, 200);
+  ellipse(740, 720, heelR, heelR);
+
+}
+
+/* End of Heat Map */
+/*******************/
+
+/******************/
+/* Interesting Implementation */
+void intrStage(){
+  background(i_map);
+}
+
+/*******************/
+/* Button Function */
+
+void button(int SP[], String buttonText, int textSize, int textColor, boolean isSelected, int highlightColor, int baseColor) {
+  //Creates a rectangle shaped button
+  //SP are arrays of size and position of the button
+
+  if(isSelected){ //highlights if selected or not
+    fill(highlightColor);
+  } else {
+    fill(baseColor);
+  }
+  rect(SP[0], SP[1], SP[2], SP[3]);
+
+  //button text
+  textSize(textSize);
+  //textAlign(CENTER);
+  fill(textColor);
+  text(buttonText,75,SP[1]+3*SP[3]/4);
+}
+
+boolean overRect(int x, int y, int width, int height)  {
+  if (mouseX >= x && mouseX <= x+width &&
+      mouseY >= y && mouseY <= y+height) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+void mousePressed() {
+  if (homeButton) {
+    state = 0;
+    background(255);
+  } else if(gaitRecordButton) {
+    state = 1;
+  } //else if () {   // for guided workout
+  //  state = 2;
+  //}
+
+}
+
+void update(int x, int y) {
+  if ( overRect(hBSP[0],hBSP[1],hBSP[2],hBSP[3]) ) {
+    homeButton = true;
+    stepRecordButton = false;
+    gaitRecordButton = false;
+  } else if ( overRect(sRSP[0],sRSP[1],sRSP[2],sRSP[3])) {
+    homeButton = false;
+    stepRecordButton = true;
+    gaitRecordButton = false;
+  } else if ( overRect(gRSP[0],gRSP[1],gRSP[2],gRSP[3])) {
+    homeButton = false;
+    stepRecordButton = false;
+    gaitRecordButton = true;
+  }
+}
+
+/* End of Button Function */
+/**************************/
+
+/*******************/
+/* Serial Event */
+void serialEvent (Serial myPort) {
+  // get the ASCII string:
+  String inString = myPort.readStringUntil('\n');
+  //println(inString);
+
+  if (inString != null ) {
+    // trim off any whitespace:
+    inString = trim(inString);
+    String[] inStringList = split(inString, ',');  // split the pair of values
+
+    accX = float(inStringList[0]);
+    accY = float(inStringList[1]);
+    accZ = float(inStringList[2]);
+    mFF = int(inStringList[3]);
+    mF = int(inStringList[4]);
+    heel = int(inStringList[5]);
+    lMF =  int(inStringList[6])*7/10;
+
+    //Check if data is being read
+    //println(accX, accY, accZ, mFF, mF, heel, lMF);
+
+    //Map radius of Circles
+    mFFR = int(map(mFF, 0, 1023, 0, 100));
+    mFR = int(map(mF, 0, 1023, 0, 100));
+    heelR = int(map(heel, 0, 1023, 0, 100));
+    lMFR = int(map(lMF, 0, 1023, 0, 100));
+    
+    detectStep();
+    
+    checkDirection();
+    
+    lastAccX = accX;
+    lastAccY = accY;
+    lastAccZ = accZ;
+    
+  }
+
+}
+
+void checkDirection(){
+  if(checkMove(accX, lastAccX)){
+    moveX = true;
+  } else {
+    moveX = false;
+  }
+  if(checkMove(accY, lastAccY)){
+    moveY = true;
+  } else {
+    moveY = false;
+  }
+  if(checkMove(accZ, lastAccZ)){
+    moveZ = true;
+  } else {
+    moveZ = false;
+  }
+}
+
+boolean checkMove(float acc, float lastAcc){
+  if(abs(lastAcc - acc) > 0.02){
+    return true;
+  } else {
+    return false;
+  }
+}
+/* End of Serial Even*/
+/**************************/

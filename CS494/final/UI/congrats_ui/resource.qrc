@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="images">
+    <file>congrats.jpg</file>
+    <file>transparent.png</file>
+  </qresource>
+</RCC>

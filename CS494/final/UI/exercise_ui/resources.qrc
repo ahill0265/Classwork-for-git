@@ -1,0 +1,8 @@
+<RCC>
+  <qresource prefix="images">
+    <file>leg_ext.jpeg</file>
+    <file>leg_lift.jpeg</file>
+    <file>squats.jpeg</file>
+    <file>step_ups.jpeg</file>
+  </qresource>
+</RCC>

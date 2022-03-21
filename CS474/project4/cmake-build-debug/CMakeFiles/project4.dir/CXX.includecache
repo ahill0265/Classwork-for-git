@@ -1,0 +1,38 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/Adam/CLionProjects/project4/Assignment.h
+Instruction.h
+C:/Users/Adam/CLionProjects/project4/Instruction.h
+
+C:/Users/Adam/CLionProjects/project4/Calculate.h
+cmath
+-
+Instruction.h
+C:/Users/Adam/CLionProjects/project4/Instruction.h
+
+C:/Users/Adam/CLionProjects/project4/Instruction.h
+iostream
+-
+vector
+-
+
+C:/Users/Adam/CLionProjects/project4/main.cpp
+iostream
+-
+fstream
+-
+vector
+-
+sstream
+-
+Calculate.h
+C:/Users/Adam/CLionProjects/project4/Calculate.h
+Assignment.h
+C:/Users/Adam/CLionProjects/project4/Assignment.h
+

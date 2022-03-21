@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/Adam/CLionProjects/project3/OrderedCollection.h
+iostream
+-
+
+C:/Users/Adam/CLionProjects/project3/main.cpp
+iostream
+-
+OrderedCollection.h
+C:/Users/Adam/CLionProjects/project3/OrderedCollection.h
+

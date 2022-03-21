@@ -1,0 +1,12 @@
+-------------------------------------------------------------------------------
+Test set: Homework4Test
+-------------------------------------------------------------------------------
+Tests run: 4, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 0.092 s <<< FAILURE! - in Homework4Test
+isLetterATest{char}[2]  Time elapsed: 0.011 s  <<< FAILURE!
+org.opentest4j.AssertionFailedError: not the letter 'a' ==> expected: <a> but was: <b>
+	at Homework4Test.isLetterATest(Homework4Test.java:15)
+
+isLetterATest{char}[4]  Time elapsed: 0.001 s  <<< FAILURE!
+org.opentest4j.AssertionFailedError: not the letter 'a' ==> expected: <a> but was: <b>
+	at Homework4Test.isLetterATest(Homework4Test.java:15)
+

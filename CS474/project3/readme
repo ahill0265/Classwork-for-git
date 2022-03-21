@@ -1,0 +1,17 @@
+OrderedCollection::OrderedCollection(): Default constructor.
+OrderedCollection::OrderedCollection(const OrderedCollection &oc): Copy constructor.
+OrderedCollection::OrderedCollection(int i): Constructor that automatically adds the value i to the first spot of the collection.
+OrderedCollection::~OrderedCollection(): Destructor. De-allocates memory assigned to the array.
+bool OrderedCollection::isEmpty(): Returns if anything is currently in the array.
+int OrderedCollection::size(): Returns the current number of items in the array.
+int OrderedCollection::basicSize(): Returns the total size of the array, not just number of added items.
+int& OrderedCollection::operator[](int i): If the input i is within the used range of the collection, returns a pointer to the i-th position of the array.
+void OrderedCollection::insertAt(int i, int x): Inserts the value x at i spot of the collection.
+int OrderedCollection::find(int x): Searches the array for input x and returns the index of the first instance of it found.
+int OrderedCollection::removeAt(int i): Removes the element at that index from the array and shifts the elements around it in.
+OrderedCollection& OrderedCollection::iterate(int (*fn)(int)): Applies the function to every element in the class's array. Pass a function as a parameter.
+OrderedCollection& OrderedCollection::operator=(const OrderedCollection &oc): Assignment copy operator. Sets the information on the left side class object to the values of the right side object.
+void OrderedCollection::grow(): Private member. Is called when adding an element to a full collection. Doubles _basicSize and makes a new array of that size.
+
+Current items in main() are there only for testing and are not required for the use of the ordered collection.
+Simply #include "OrderedCollection.h", include OrderedCollection.cpp with the file it's used in and complied, and it'll be ready for use.

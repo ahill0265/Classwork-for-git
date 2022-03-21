@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="images">
+    <file>transparent.png</file>
+    <file>home.JPG</file>
+  </qresource>
+</RCC>
